@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>minobit Finanz - Darlehen</title>
+        
+        
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <!-- javascript -->
+        <script src="js/jquery-2.1.1.min.js"></script>
+        <script src="js/jquery.mobile-1.4.5.min.js"></script>
+        
+        <!-- stylesheets -->
+        <link rel="stylesheet" type="text/css" href="css/index.css">
+        <link rel="stylesheet" type="text/css" href="css/jquery.mobile-1.4.5.min.css">
+        
+    </head>
+
+    <body>
+
+      <div data-role="page">
+      
+        <div data-role="header">
+          <h1>Darlehensrechner</h1>
+          <a href="#" id="back" onclick="goBack();" data-icon="back" class="ui-btn-left">Zur&uuml;ck</a>
+        </div>
+        
+        <div class="ui-content" role="main">
+        
+          <label for="x">Darlehenssumme</label>
+          <input type="number" step="0.01" class="form-control" id="x" placeholder="Darlehenssumme eingeben ..." data-clear-btn="true">
+          
+          <label for="n">Laufzeit in Monaten</label>
+          <input type="number" step="0.01" class="form-control" id="n" placeholder="Laufzeit in Monaten eingeben ..." data-clear-btn="true">
+          
+          <label for="p">Zinssatz in %</label>
+          <input type="number" step="0.001" class="form-control" id="p" placeholder="Zinssatz eingeben ..." data-clear-btn="true">
+          
+          <label for="r">monatl. Rate</label>
+          <input type="number" step="0.01" class="form-control" id="r" placeholder="monatliche Rate eingeben ..." data-clear-btn="true">
+          
+          <label>Tilgung</label>
+          <fieldset data-role="controlgroup">
+            <input type="radio" name="tilgung" id="tilgungOptionsRadios1" value="1" checked="checked">
+            <label for="tilgungOptionsRadios1">Ja</label>
+            <input type="radio" name="tilgung" id="tilgungOptionsRadios2" value="2">
+            <label for="tilgungOptionsRadios2">Nein</label>
+          </fieldset>
+          
+          <label for="z">Kontof&uuml;hrung pro Quartal</label>
+          <input type="number" step="0.01" class="form-control" id="z" placeholder="Kontof&uuml;hrung pro Quartal eingeben ..." data-clear-btn="true">
+
+          <br/>
+          <br/>
+          <label for="od">offenes Darlehen</label>
+          <input type="number" class="form-control" id="od" data-clear-btn="true">
+          
+          <label for="nm">nach Monaten</label>
+          <input type="number" class="form-control" id="nm" data-clear-btn="true">
+          <br/>
+          <br/>
+          
+          <label for="gb">Gesamtbelastung</label>
+          <input type="number" step="0.01" class="form-control" id="gb" placeholder="Gesamtbelastung eingeben ..." data-clear-btn="true">
+        
+          <br/>
+          <fieldset data-role="controlgroup">
+            <input type="radio" name="optionsRadios" id="optionsRadios1" value="1" checked="checked">
+            <label for="optionsRadios1">Finanzmathematisch</label>
+            <input type="radio" name="optionsRadios" id="optionsRadios2" value="2">
+            <label for="optionsRadios2">Banktechnisch</label>
+          </fieldset>
+          
+          <button id="berechnen" class="ui-shadow ui-btn ui-corner-all ui-btn-active">Berechnen</button>
+          
+        </div>
+        
+      </div>
+
+      <script>
+      
+        var goBack = function() {
+          window.location.href = 'index.html';
+        }
+      
+        var empty = function(n) {
+          return n == null || isNaN(n);
+        };
+        
+        var emptyCount = function(n) {
+          if(empty(n)) {
+            return 0;
+          } else {
+            return 1;
+          }
+        };
+      
+        var init = function() {
+          $('#x').val(50000);
+          $('#n').val(24);
+          $('#p').val(4.000);
+          $('#r').val(2172.16);
+          $('#z').val(0.00);          
+        };
+        
+        $(document).ready(function() {
+          init();
+        });
+                
+        var roundTo = function round(value, decimals) {
+          return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+        };
+        
+        var done = function(r, n) {
+          // Gesamtbelastung berechnen
+          $('#gb').val(roundTo(r * n, 2));
+        };
+        
+        var offen = function(v, n, x, r, z, pqu, p, m) {
+          var mtl = parseFloat($('#nm').val());
+          
+          if( !empty(mtl) ) {
+            if( v == 1 ) {
+              if( mtl < 0 || mtl > n ) {
+                alert("nach Monaten: Bitte geben Sie eine Zahl >= 0 und <= " + n +  " ein");
+                return;
+              }
+              
+              if( p <= 0 ) {
+                $('#od').val(roundTo(x - (r - z / 3) * mtl, 2));
+              } else {
+                if( (finma = 1) ) {
+                  $('#od').val(roundTo(x * Math.pow((1 + p / m) , mtl) - (r - z / 3) * (( Math.pow((1 + p / m) , mtl) - 1) / (p / m)), 2));
+                } else {
+                  $('#od').val(roundTo(x * ( Math.pow((1 + pqu) , (mtl / 3))) - (r - z / 3) * (( Math.pow((1 + pqu) , (mtl / 3)) - 1) / pqu * (2 + (1 + pqu))), 2));
+                }
+              }
+            } else {
+              $('#od').val(roundTo(parseFloat($('#x').val()), 2));
+            }
+          } else {
+            $('#od').val(null);
+          }
+        };
+        
+        $("#berechnen").click(function() {
+          var finma = parseInt($('input[name="optionsRadios"]:checked').val());
+
+          var x = parseFloat($('#x').val().replace(',', '.'));
+          var n = parseFloat($('#n').val().replace(',', '.'));
+          var p = parseFloat($('#p').val().replace(',', '.')) / 100;
+          var r = parseFloat($('#r').val().replace(',', '.'));
+          var z = parseFloat($('#z').val().replace(',', '.'));
+          var v = parseInt($('input[name="tilgung"]:checked').val());
+          var m = 12;
+          var od = parseFloat($('#od').val().replace(',', '.'));
+              
+          // Plausibilität prüfen
+          if(!empty(x) && (x < 1 || x > 999999999)) {
+            alert("Darlehenssumme: Bitte geben Sie eine Zahl >=1 und <=999.999.999 ein!");
+            return;
+          }
+          
+          if(!empty(r) && (r < 1 || r > 999999)) {
+            alert("Rate: Bitte geben Sie eine Zahl >= 1 und <= 999.999 ein!");
+            return;
+          }
+          
+          if(!empty(p) && (p <= 0 || p > 0.5)) {
+             alert('Zinssatz: Bitte geben Sie eine Zahl > 0 und <= 50 ein!');
+             return;
+          }
+          
+          if(!empty(n) && (n < 1 || n > 1200)) {
+            alert('Laufzeit: Bitte geben Sie eine Zahl >= 1 und <= 100 ein');
+            return;
+          }
+          
+          if(!empty(z) && z < 0) {
+            alert(unescape('Kontof%FChrung: Bitte geben Sie eine Zahl >= 1 und <= 999.999.999 ein'));
+            return;
+          }
+          
+          // gefüllte Felder zählen
+          var fieldCount = 0;
+          if(v == 1) {
+            if(!empty(n)) {
+              fieldCount++;
+            }
+          } else {
+            fieldCount++;
+          }
+          fieldCount += emptyCount(x) +  
+                        emptyCount(p) +
+                        emptyCount(r);
+                           
+          if(fieldCount < 3) {            
+            alert(unescape("Was wollen Sie berechnen%3F Es ist mehr als ein Feld leer%21 F%FCllen Sie alle Felder mit Daten aus%2C bis auf das zu berechnende Feld."));
+            return;
+          }
+          
+          var pqu = null;
+          if(!empty(p)) {
+            pqu = p / 4 * 365 / 360;
+          }
+          
+          if (fieldCount >= 4) {
+            if(!empty(od)) {
+              alert(unescape("Kurzbeschreibung%3A L%F6schen Sie das Feld welches Sie berechnen m%F6chten mit %3CEntf%3E. Dr%FCcken Sie den %3CRechnen%3E Knopf %28Nicht berechenbar ist die Kontof%FChrung pro Quartal%29"));
+            } else {
+              offen(v, n, x, r, z, pqu, p, m);
+            }
+            done(r,n);
+            return;
+          }
+                    
+          // Darlehenssumme berechnen
+          if( empty(x) ) {
+            if( v == 1 ) {
+              if( (finma == 1) ) {
+                x = (r - z / 3) * (( Math.pow((1 + p / m) , n) - 1) / ((p / m) * Math.pow((1 + p / m) , n)));
+              } else {
+                x = ((r - z / 3) / (( Math.pow((1 + pqu) , (n / 3)) * pqu) / ( Math.pow((1 + pqu) , (n / 3)) - 1) * 1 / (2 + (1 + pqu))));
+              }
+            } else {
+              x = (r - z / 3) / (((p * 365 / 360) / 12));
+            }
+            $('#x').val(roundTo(x, 2));
+            offen(v, n, x, r, z, pqu, p, m);
+            done(r,n);
+            return;
+          }
+          
+          // Zinssatz berechnen
+          if( empty(p) ) {
+            if( v == 1 ) {
+              if( (r - z / 3) * n > x ) {
+                var p_max = 0.5;
+                var p_min = 0;
+                var p_var = p_max;
+                var d = 1;
+                while (Math.abs(d) > 0.0000001) {
+                  var p_help = p_var;
+                  if( (finma == 1) ) {
+                    d = x - ((r - z / 3) * (( Math.pow((1 + p_var / m) , n) - 1) / ((p_var / m) * Math.pow((1 + p_var / m) , n))));
+                  } else {
+                    pqu = p_var / 4 * 365 / 360;
+                    d = (x * ( Math.pow((1 + pqu) , (n / 3)) * pqu) / ( Math.pow((1 + pqu) , (n / 3)) - 1) * 1 / (2 + (1 + pqu)) + (z / 3)) - r;
+                  }
+                  if( d > 0 ) {
+                    p_max = p_var;
+                  } else {
+                    p_min = p_var;
+                  }
+                  p_var = (p_max - p_min) / 2 + p_min;
+                  if( (p_min == p_max) ) {
+                    if( (p_max >= 10) ) {
+                      d = 0;
+                      p_help = 9.99999;
+                    } else {
+                      p_max = p_max + 0.5;
+                    }
+                  }
+                  if( p_var < 0.0000000001 ) {
+                    d = 0;
+                    p_help = 0;
+                  }
+                }
+                p = p_help;
+              } else {
+                p = 0;
+              }
+            } else {
+              p = (r - z / 3) / x * 12 * 360 / 365;
+            }
+            $('#p').val(roundTo(p, 5) * 100);
+            pqu = p / 4 * 365 / 360;
+            offen(v, n, x, r, z, pqu, p, m);
+            done(r,n);
+            return;
+          }
+          
+          // Rate berechnen
+          if( empty(r) ) {
+            if( v == 1 ) {
+              if( (finma == 1) ) {
+                r = x / (( Math.pow((1 + p / m) , n) - 1) / ((p / m) * Math.pow((1 + p / m) , n))) + z / 3;
+              } else {
+                r = (x * ( Math.pow((1 + pqu) , (n / 3)) * pqu) / ( Math.pow((1 + pqu) , (n / 3)) - 1) * 1 / (2 + (1 + pqu)) + (z / 3));
+              }
+            } else {
+              r = ((x * (p * 365 / 360) / 12) + (z / 3));
+            }
+            $('#r').val(roundTo(r, 2));
+            offen(v, n, x, r, z, pqu, p, m);
+            done(r,n);
+            return;
+          }
+          
+          // Laufzeit berechnen
+          if( empty(n) ) {
+            if( v == 1 ) {
+              if( (finma == 1) ) {
+                if( (x * (p / 12) >= r - z / 3) ) {
+                  n = 999999;
+                } else {
+                  n = Math.log(1 / (1 - (x / (r - z / 3)) * (p / m))) / Math.log(1 + p / m);
+                }
+              } else {
+                var n_test = x * pqu / (r - z / 3) / (2 + (1 + pqu));
+                if( (n_test >= 1) ) {
+                  n = 999999;
+                } else {
+                  n = 3 * (Math.log(1 / (1 - (x * pqu / (r - z / 3) / (2 + (1 + pqu))))) / Math.log(1 + pqu));
+                }
+              }
+            } else {
+              n = 0;
+            }
+            $('#n').val(roundTo(n, 2));
+            offen(v, n, x, r, z, pqu, p, m);
+            done(r,n);
+            return;
+          }
+         
+         
+        });
+      
+      </script>
+    
+      
+
+      
+    </body>
+</html>

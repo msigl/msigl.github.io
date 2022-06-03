@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>minobit Finanz - Ansparen</title>
+        
+        
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <!-- javascript -->
+        <script src="js/jquery-2.1.1.min.js"></script>
+        <script src="js/jquery.mobile-1.4.5.min.js"></script>
+        
+        <!-- stylesheets -->
+        <link rel="stylesheet" type="text/css" href="css/index.css">
+        <link rel="stylesheet" type="text/css" href="css/jquery.mobile-1.4.5.min.css">
+        
+    </head>
+
+    <body>
+
+      <div data-role="page">
+      
+        <div data-role="header">
+          <h1>Ansparrechner</h1>
+          <a href="#" id="back" onclick="goBack();" data-icon="back" class="ui-btn-left">Zur&uuml;ck</a>
+        </div>
+        
+        <div class="ui-content" role="main">
+          
+          <label for="r">Sparrate</label>
+          <input type="number" step="0.01" class="form-control" id="r" placeholder="Sparrate eingeben ..." data-clear-btn="true">
+          
+          <label for="m">Zahlungsweise</label>
+          <input type="number" class="form-control" id="m" placeholder="Zahlungsweise eingeben ..." data-clear-btn="true">
+          
+          <label for="p">Zinssatz in %</label>
+          <input type="number" step="0.001" class="form-control" id="p" placeholder="Zinssatz eingeben ..." data-clear-btn="true">
+          
+          <label for="s">J&auml;hrliche Dynamisierung in %</label>
+          <input type="number" step="0.001" class="form-control" id="s" placeholder="J&auml;hrliche Dynamisierung eingeben ..." data-clear-btn="true">
+          
+          <label for="n">Laufzeit in Jahren</label>
+          <input type="number" step="0.01" class="form-control" id="n" placeholder="Laufzeit in Jahren eingeben ..." data-clear-btn="true">
+          
+          <label for="z">Endsumme</label>
+          <input type="number" step="0.01" class="form-control" id="z" placeholder="Endsumme eingeben ..." data-clear-btn="true">
+        
+          <br/>
+          <fieldset data-role="controlgroup">
+            <input type="radio" name="optionsRadios" id="optionsRadios1" value="1" checked="checked">
+            <label for="optionsRadios1">Finanzmathematisch</label>
+            <input type="radio" name="optionsRadios" id="optionsRadios2" value="2">
+            <label for="optionsRadios2">Banktechnisch</label>
+          </fieldset>
+          
+          <button id="berechnen" class="ui-shadow ui-btn ui-corner-all ui-btn-active">Berechnen</button>
+          
+        </div>
+        
+      </div>
+
+      <script>
+      
+        var goBack = function() {
+          window.location.href = 'index.html';
+        }
+      
+        var empty = function(n) {
+          return n == null || isNaN(n);
+        };
+        
+        var emptyCount = function(n) {
+          if(empty(n)) {
+            return 0;
+          } else {
+            return 1;
+          }
+        };
+      
+        var init = function() {
+          $('#r').val(100.00);
+          $('#m').val(12);
+          $('#p').val(4.000);
+          $('#s').val(0.000);
+          $('#n').val(20);
+        };
+        
+        $(document).ready(function() {
+          init();
+        });
+                
+        var roundTo = function round(value, decimals) {
+          return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+        };
+        
+        $("#berechnen").click(function() {
+          var finma = parseInt($('input[name="optionsRadios"]:checked').val());
+          
+          var r = parseFloat($('#r').val().replace(',', '.'));
+          var m = parseFloat($('#m').val().replace(',', '.'));
+          var p = parseFloat($('#p').val().replace(',', '.')) / 100;
+          var s = parseFloat($('#s').val().replace(',', '.')) / 100;
+          var n = parseFloat($('#n').val().replace(',', '.'));
+          var z = parseFloat($('#z').val().replace(',', '.'));
+              
+          // Plausibilität prüfen
+          if(!empty(r) && (r < 1 || r > 999999)) {
+            alert("Sparrate: Bitte geben Sie eine Zahl >= 1 und <= 999.999 ein!");
+            return;
+          }
+          
+          if(empty(m) || m < 1 || m > 12) {
+            alert('Zahlungsweise: Bitte geben Sie 1, 2, 4 oder 12 ein!');
+            return;
+          }
+          
+          if(!empty(p) && (p <= 0 || p > 0.5)) {
+             alert('Zinssatz: Bitte geben Sie eine Zahl > 0 und <= 50 ein!');
+             return;
+          }
+          
+          if(!empty(s) && (s < 0 || s > 0.5)) {
+             alert('Dynamisierung: Bitte geben Sie eine Zahl >= 0 und <= 50 ein');
+          }
+           
+          if(!empty(n) && (n < 1 || n > 100)) {
+            alert('Laufzeit: Bitte geben Sie eine Zahl >= 1 und <= 100 ein');
+            return;
+          }
+          
+          if(!empty(z) && (z < 1 || z > 999999999)) {
+            alert('Endsumme: Bitte geben Sie eine Zahl >= 1 und <= 999.999.999 ein');
+            return;
+          }
+          
+          // gefüllte Felder zählen
+          var fieldCount = emptyCount(r) +  
+                           emptyCount(m) +
+                           emptyCount(p) +
+                           emptyCount(s) +
+                           emptyCount(n) +
+                           emptyCount(z);
+                           
+          if(fieldCount < 5) {            
+            alert(unescape("Was wollen Sie berechnen%3F Es ist mehr als ein Feld leer%21 F%FCllen Sie alle Felder mit Daten aus%2C bis auf das zu berechnende Feld."));
+            return;
+          }
+          
+          if(fieldCount >= 6) {
+            alert(unescape("Kurzbeschreibung%3A L%F6schen Sie das Feld welches Sie berechnen m%F6chten mit %3CEntf%3E. Dr%FCcken Sie den %3CBerechnen%3E Knopf %28Nicht berechenbar ist die Zahlungsweise%29"));
+            return;
+          }
+          
+          var ajef = null;
+          
+          // Berechnung des äquivalenten Jahresendfaktors (ajef)
+          if(!empty(p)) {
+            ajef = m + p / 2 * (m + 1);
+          }
+          
+          // Rate berechnen
+          if(empty(r)) {
+            if(p == 0 || n == 0) {
+              if(n == 0 || m == 0) {
+                r = 0;
+              } else {
+                r = z / m / n;
+              }
+            } else {
+              //r = z / (ajef * ((1 + p) ^ n - 1) / p)   'ohne Dynamisierung
+              if(p != s) {
+                if(finma == 1) {
+                  r = z / (
+                            (
+                              Math.pow((1 + p / m), (m * n)) - 
+                              Math.pow((1 + s / m), (m * n))
+                            ) / 
+                            (
+                              (1 + p / m) - (1 + s / m)
+                            )
+                           );
+                } else {
+                  r = z / (ajef * (Math.pow((1 + s), n) - Math.pow((1 + p), n)) / ((1 + s) - (1 + p)));
+                }
+              } else {
+                if(finma == 1) {
+                  r = z / Math.pow(n * m * (1 + p / m), (n * m - 1));
+                } else {
+                  r = z / Math.pow(ajef * n * (1 + p), (n - 1));
+                }
+              }
+            }
+            
+            $('#r').val(roundTo(r, 2));
+            return;
+          }
+          
+          // Zinssatz berechnen
+          if(empty(p)) {
+            if( r * m * n < z ) {
+              var p_max = 0.5;
+              var p_min = 0;
+              var p_var = p_max;
+              var d = 1;
+              while (Math.abs(d) > 0.0001) {
+                if( (s != p_var) ) {
+                  var p_help = p_var;
+                  // d = r * (ajef * ((1 + p_var) ^ n - 1) / p_var) - z // ohne Dynamisierung
+                  if( (finma == 1) ) {
+                    d = r * (Math.pow((1 + p_var / m), (m * n)) - Math.pow((1 + s / m),(m * n))) / ((1 + p_var / m) - (1 + s / m)) - z;
+                  } else {
+                    ajef = m + p_var / 2 * (m + 1);
+                    d = r * ajef * (Math.pow((1 + s),n) - Math.pow((1 + p_var), n)) / ((1 + s) - (1 + p_var)) - z;
+                  }
+                  if( d > 0 ) {
+                    p_max = p_var;
+                  } else {
+                    p_min = p_var;
+                  }
+                  p_var = (p_max - p_min) / 2 + p_min;
+                  if( (p_min == p_max) ) {
+                    if( (p_max >= 10) ) {
+                      d = 0;
+                      p_help = 9.99999;
+                    } else {
+                      p_max = p_max + 0.5;
+                    }
+                  }
+                } else {
+                  p_var = p_var + 0.001;
+                }
+                if( p_var < 0.0000000001 ) {
+                  d = 0;
+                  p_help = 0;
+                }
+              }
+              p = p_help;
+            } else {
+              p = 0;
+            }
+            $('#p').val(roundTo(p, 5) * 100);
+            return;
+          }
+          
+          
+          // Laufzeit berechnen
+          if(empty(n)) {
+            // n = Log(z * p / (r * ajef) + 1) / Log(1 + p)  'ohne Dynamisierung
+            var n_max = 50;
+            var n_min = 0;
+            var n_var = n_max;
+            var d = 1;
+            while (Math.abs(d) > 0.0000001) {
+              n_help = n_var;
+              if( (p != s) ) {
+                if( (finma == 1) ) {
+                  d = r * (Math.pow((1 + p / m),(m * n_var)) - Math.pow((1 + s / m), (m * n_var))) / ((1 + p / m) - (1 + s / m)) - z;
+                } else {
+                  d = r * ajef * (Math.pow((1 + s), n_var) - Math.pow((1 + p),n_var)) / ((1 + s) - (1 + p)) - z;
+                }
+              } else {
+                if( (finma == 1) ) {
+                  d = r * n_var * m * Math.pow((1 + p / m), (n_var * m - 1)) - z;
+                } else {
+                  d = r * ajef * n_var * Math.pow((1 + p) , (n_var - 1)) - z;
+                }
+              }
+              if( d > 0 ) {
+                n_max = n_var;
+              } else {
+                n_min = n_var;
+              }
+              n_var = (n_max - n_min) / 2 + n_min;
+              if( (n_min == n_max) ) {
+                if( (n_max >= 1000) ) {
+                  d = 0;
+                  n_help = 999.99;
+                } else {
+                  n_max = n_max + 50;
+                }
+              }
+              if( n_var < 0.0000000001 ) {
+                d = 0;
+                n_help = 0;
+              }
+            }
+            n = n_help;
+            $('#n').val(roundTo(n, 2));
+            return;
+          }
+          
+          // Ergebnis berechnen
+          if(empty(z)) {
+            if( (p == 0) ) {  // eigentlich nicht notwendig, da bei Eingabe schon abgefangen
+              z = r * m * n;
+            } else {
+              // z = r * ajef * ((1 + p) ^ n - 1) / p  //ohne Dynamisierung
+              if( (p != s) ) {
+                if( (finma == 1) ) {
+                  z = r * (Math.pow((1 + p / m), (m * n)) - Math.pow((1 + s / m), (m * n))) / ((1 + p / m) - (1 + s / m));
+                } else {
+                  z = r * ajef * (Math.pow((1 + s) , n) - Math.pow((1 + p) , n)) / ((1 + s) - (1 + p));
+                }
+              } else {
+                if( (finma == 1) ) {
+                  z = r * n * m * (1 + p / m) ^ (n * m - 1);
+                } else {
+                  z = r * ajef * n * (1 + p) ^ (n - 1);
+                }
+              }
+            }
+            $('#z').val(roundTo(z, 2));
+            return;
+          }
+        });
+      
+      </script>
+    
+      
+
+      
+    </body>
+</html>

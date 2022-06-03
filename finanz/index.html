@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>minobit Finanz</title>
+        
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <!-- javascript -->
+        <script src="js/jquery-2.1.1.min.js"></script>
+        <script src="js/jquery.mobile-1.4.5.min.js"></script>
+        
+        <!-- stylesheets -->
+        <link rel="stylesheet" type="text/css" href="css/index.css">
+        <link rel="stylesheet" type="text/css" href="css/jquery.mobile-1.4.5.min.css">
+        
+    </head>
+
+    <body>
+      <div data-role="page">
+      
+        <div data-role="header">
+          <h1>minobit Finanz</h1>
+        </div>
+        
+        <div class="ui-content" role="main">
+        
+          <ul data-role="listview" data-ajax="false" data-inset="true" data-theme="a">
+            <li class="ui-state-disabled"><a href="#">Rendite</a></li>
+            <li><a onclick="goTo('ansparen.html');" href="#">Ansparen</a></li>
+            <li><a onclick="goTo('kapitalanlage.html');" href="#">Kapitalanlage</a></li>
+            <li><a onclick="goTo('anlagemix.html');" href="#">Anlagemix</a></li>
+            <li><a onclick="goTo('auszahlung.html');" href="#">Auszahlung</a></li>
+            <li class="ui-state-disabled"><a href="#">Abzinsung</a></li>
+            <li class="ui-state-disabled"><a href="#">Fonds</a></li>
+            <li><a onclick="goTo('darlehen.html');" href="#">Darlehen</a></li>
+            <li class="ui-state-disabled"><a href="#">Tilgungstabelle</a></li>
+            <li class="ui-state-disabled"><a href="#">Leasing</a></li>
+            <li class="ui-state-disabled"><a href="#">Landesdarlehen</a></li>
+            <li class="ui-state-disabled"><a href="#">X-Jahre</a></li>
+          </ul>
+        
+        </div>
+        
+      </div>
+      
+      <script>
+        var goTo = function(url) {
+          window.location.href = url;
+        };
+      </script>
+
+      
+    </body>
+</html>
